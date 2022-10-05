@@ -1,9 +1,6 @@
-# main.py
-
 '''
 A random password generator using python and tkinter library
 '''
-
 
 import string
 import random
@@ -19,15 +16,22 @@ class RandomPasswordGenerator(tk.Tk):
         self.lower_c = tk.BooleanVar()
         self.numbers = tk.BooleanVar()
         self.special_c = tk.BooleanVar()
+        self.charset = []
+
+        # *Tkinter definitions
         self.title("Random Password Generator")
-        self.geometry("800x220")
+        self.geometry("800x190")
         self.resizable(False, False)
         self._set_window()
 
     def _set_window(self):
+        """This private method determines the design of the GUI
+        """
+        # Define the main frame where all widgets will be placed
         root = tk.Frame(self)
         root.pack(fill=tk.BOTH, padx=5, pady=5)
 
+        # Frame for the text field
         text_frame = tk.LabelFrame(
             root,
             relief=tk.GROOVE,
@@ -39,10 +43,12 @@ class RandomPasswordGenerator(tk.Tk):
             text_frame,
             height=1,
             state=tk.DISABLED,
-            font=('Times New Roman', 24, 'bold')
             )
         password_text.pack(fill=tk.BOTH, padx=10, pady=10)
 
+        # Framework for the definition of the password parameters.
+        # Includes a scrollbar for the password length, a check box group for
+        # the allowed character groups, and a button to generate the password.
         param_frame = tk.LabelFrame(root, text="Parameters")
         param_frame.pack(fill='both', padx=5, pady=5)
 
@@ -51,7 +57,7 @@ class RandomPasswordGenerator(tk.Tk):
 
         pw_lenght = tk.Scale(
             scale_frame,
-            from_=16, to=256,
+            from_=8, to=128,
             orient='horizontal',
             length=360,
             label="Choose password lenght",
@@ -64,12 +70,12 @@ class RandomPasswordGenerator(tk.Tk):
 
         upper_letters = tk.Checkbutton(
             check_box_frame,
-            text="Uppercase letters",
+            text="Uppercase Letters",
             variable=self.upper_c
             )
         lower_letters = tk.Checkbutton(
             check_box_frame,
-            text="Lowercase letters",
+            text="Lowercase Letters",
             variable=self.lower_c
             )
         numbers = tk.Checkbutton(
@@ -79,7 +85,7 @@ class RandomPasswordGenerator(tk.Tk):
             )
         special_chars = tk.Checkbutton(
             check_box_frame,
-            text="Special Characters",
+            text="Punctuation",
             variable=self.special_c
             )
         upper_letters.grid(row=0, column=0, sticky='w')
@@ -90,36 +96,53 @@ class RandomPasswordGenerator(tk.Tk):
         button_frame = tk.LabelFrame(param_frame, relief=tk.GROOVE)
         button_frame.grid(row=0, column=2, sticky='nsew', padx=5, pady=5)
 
-        def _add_to_textbox(entry):
+        def _add_to_textbox(entry: str):
+            """This method unlocks the text field, deletes the text currently
+            in it, inserts a new text and locks the text field again.
+
+            Args:
+                entry (str): Text to be inserted in the text field
+            """
             password_text.configure(state=tk.NORMAL)
             password_text.delete(1.0, tk.END)
             password_text.insert(tk.END, entry)
             password_text.configure(state=tk.DISABLED)
 
         def generate_pw():
+            """This method first queries which character types are allowed,
+            then generates the character set from which the password is
+            generated
+            """
+            # Querying the check box states
             upper_c = self.upper_c.get()
             lower_c = self.lower_c.get()
             number_c = self.numbers.get()
             special_c = self.special_c.get()
-            charset = []
+
+            # Emptying the character set and creating a new one based on the
+            # checkbox states
+            self.charset = []
             if upper_c is True:
-                u_letters = [u for u in string.ascii_uppercase]
-                charset += u_letters
+                self.charset += [u for u in string.ascii_uppercase]
             if lower_c is True:
-                l_letters = [lower for lower in string.ascii_lowercase]
-                charset += l_letters
+                self.charset += [lower for lower in string.ascii_lowercase]
             if number_c is True:
-                nums = [str(n) for n in range(0, 10)]
-                charset += nums
+                self.charset += [str(n) for n in range(0, 10)]
             if special_c is True:
-                s_chars = [c for c in string.punctuation]
-                charset += s_chars
+                self.charset += [c for c in string.punctuation]
+
+            # For loop that jpoins the selected number of random characters
+            # from the character set to a string, including catching an
+            # IndexError if the character set is empty. Finally, output the
+            # password in the text field
             pw = ""
             try:
                 for _ in range(self.len_pw.get()):
-                    pw += random.choice(charset)
+                    pw += random.choice(self.charset)
             except IndexError:
-                _add_to_textbox("Please select elemnets for charset")
+                _add_to_textbox(
+                    "Please select at least one allowed character group first"
+                    )
                 return
             _add_to_textbox(pw)
 
